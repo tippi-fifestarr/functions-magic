@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.enc
+.env.example
 
 # Forge
 out

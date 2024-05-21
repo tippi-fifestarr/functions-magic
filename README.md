@@ -1,5 +1,6 @@
 # Block Magic Functions Workshop
-In this workshop, we will build a price forecast to help inform the direction of a trade transaction.
+In this workshop, we will build a price forecast to help inform the direction of a trade transaction. 
+"Persistence is key, don't give up!" - [BunsDev](https://github.com/BunsDev/)
 
 ## Getting Started
 - [Install Foundry and Rust](/docs/INSTALL.md)
@@ -13,7 +14,18 @@ Chainlink is able to execute a user-defined function via a DON, which comes to c
 
 ---
 
-## Functions Workflow
+## Magic Workflow
+
+> -1. Clone this repo `https://github.com/tippi-fifestarr/functions-magic` (a fork from [BunsDev/functions-workshop](https://github.com/BunsDev/functions-workshop))
+
+0. Check your prerequisites (above) and `yarn install`
+1. Set up your environment variables with Chainlink's ENV-ENC encryption tool
+2. Simulate your function to ensure it behaves as expected
+3. Deploy your consumer contract
+4. Create a subscription for your consumer contract
+5. Make requests to your consumer contract
+6. Query the response from your consumer contract
+7. Celebrate 🎉
 
 ### 1. Setup Environment Variables
 
@@ -22,7 +34,7 @@ Chainlink Functions enables you to securely share secrets with the DON. Secrets 
 ```
 yarn set:pw
 ```
-Once the ecrpytion key is created with your desired password, you can safely share your secrets with the DON, which requires multiple nodes to decrypt with consensus.
+Once the encryption key is created with your desired password, you can safely share your secrets with the DON, which requires multiple nodes to decrypt with consensus.
 
 #### Store Variables
 
