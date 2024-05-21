@@ -1,5 +1,5 @@
-# Block Magic Functions Workshop
-In this workshop, we will build a price forecast to help inform the direction of a trade transaction. 
+# Block Magic ++Functions Workshop
+In this exercise, we transform the price forecast bot functions workshop into a D&D themed character info generator.  We take in character info from ```RanCharacter.sol``` and pass that to GPT for some unique Ideals, Traits, Flaws and Bonds. But first, we make a simple hardcoded backstory generator to get the ball rolling.
 "Persistence is key, don't give up!" - [BunsDev](https://github.com/BunsDev/)
 
 ## Getting Started

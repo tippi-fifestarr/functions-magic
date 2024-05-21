@@ -1,16 +1,27 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.19;
+// In the game of D&D, creating a new character can be a lot of fun, or take ages and prevent you from playing
+// This contract is a simple example of how you can use Chainlink VRF to generate a random character
+// A character has 6 ability scores, a class, a name, an alignment, and a background
+// Also, there are Traits, Ideals, Bonds, and Flaws, but we'll keep it simple for now
+// The character's name, class and background are chosen from on-chain arrays of strings in other contracts
+// The ability scores are generated from a single random number using a bitshift and modulo
 
 import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {OpenSourceRandomNames} from "./OSRN.sol";
 import {OpenSourceRandomBackstory} from "./OSRB.sol";
+import {OpenSourceRandomClasses} from "./OSRC.sol";
 
-contract CCGNBS is VRFConsumerBaseV2Plus {
+/**
+ * @title VRF 2.5 example subscription contract for generating random characters
+ */
+contract QuickCharacter is VRFConsumerBaseV2Plus {
     IVRFCoordinatorV2Plus COORDINATOR;
     OpenSourceRandomNames public randomNamesContract;
     OpenSourceRandomBackstory public randomBackstoryContract;
+    OpenSourceRandomClasses public randomClassesContract;
 
     uint256 s_subscriptionId = 21065254117722076320750141452575268873113382931160444158709360180731175497445;
     bytes32 keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
@@ -38,7 +49,8 @@ contract CCGNBS is VRFConsumerBaseV2Plus {
     event ScoresSwapped(address owner);
     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
     event RandomWordSaved(address owner);
-    event RandomNamesContractSet(address randomNamesContract);
+    event RandomContractsSet(address randomNamesContract, address randomBackstoryContract, address randomClassesContract);
+
 
     constructor() VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B)
  {
@@ -48,13 +60,16 @@ contract CCGNBS is VRFConsumerBaseV2Plus {
     }
 
     // function to set both contracts at once
-    function setRandomContracts(address _randomNamesContract, address _randomBackstoryContract) external {
+    function setRandomContracts(address _randomNamesContract, address _randomBackstoryContract, address _randomClassesContract) external {
         randomNamesContract = OpenSourceRandomNames(_randomNamesContract);
         randomBackstoryContract = OpenSourceRandomBackstory(_randomBackstoryContract);
-        emit RandomNamesContractSet(_randomNamesContract);
+        randomClassesContract = OpenSourceRandomClasses(_randomClassesContract);
+        emit RandomContractsSet(_randomNamesContract, _randomBackstoryContract, _randomClassesContract);
     }
 
     function createCharacter(string calldata playerName) external {
+        // check that the random contracts are set
+        require(address(randomNamesContract) != address(0) && address(randomBackstoryContract) != address(0) && address(randomClassesContract) != address(0), "Random contracts not set");
         require(characters[msg.sender].randomWord == 0, "Character already created, use finalizeCharacterDetails");
         uint256 requestId = COORDINATOR.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -128,9 +143,8 @@ contract CCGNBS is VRFConsumerBaseV2Plus {
         emit ScoresSwapped(msg.sender);
     }
 
-    function getClass(uint256 randomNumber) private pure returns (string memory) {
-        string[13] memory classes = ["Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger", "Rogue", "Sorcerer", "Warlock", "Wizard", "Ceptor"];
-        return classes[randomNumber % classes.length];
+    function getClass(uint256 randomNumber) private view returns (string memory) {
+        return randomClassesContract.classes(randomNumber % 13);
     }
 
     // because the ability scores are stored as an array, they aren't easily readable
