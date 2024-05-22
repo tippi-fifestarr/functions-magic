@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+// the original RAGMATIC deployed on MATIC Amoy testnet at: 0x145Ea65c9e7A97028dfeD9F1F0fA71D5bA5dd00B
+// this one will move us closer to the goal, explained in readme.md
 pragma solidity 0.8.19;
 // In the game of D&D, creating a new character can be a lot of fun, or take ages and prevent you from playing
 // This contract is a simple example of how you can use Chainlink VRF to generate a random character
@@ -10,6 +12,7 @@ pragma solidity 0.8.19;
 import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {OpenSourceRandomNames} from "./OSRN.sol";
 import {OpenSourceRandomBackstory} from "./OSRB.sol";
 import {OpenSourceRandomClasses} from "./OSRC.sol";
@@ -17,7 +20,13 @@ import {OpenSourceRandomClasses} from "./OSRC.sol";
 /**
  * @title VRF 2.5 example subscription contract for generating random characters
  */
-contract QuickCharacterMATIC is VRFConsumerBaseV2Plus {
+contract QuickCharacterMATICLink is VRFConsumerBaseV2Plus {
+    AggregatorV3Interface internal dataFeed;
+    /**
+     * Network: Amoy Testnet
+     * Aggregator: LINK/USD
+     * Address: 0xc2e2848e28B9fE430Ab44F55a8437a33802a219C
+     */
     IVRFCoordinatorV2Plus COORDINATOR;
     OpenSourceRandomNames public randomNamesContract;
     OpenSourceRandomBackstory public randomBackstoryContract;
@@ -29,6 +38,9 @@ contract QuickCharacterMATIC is VRFConsumerBaseV2Plus {
     uint32 callbackGasLimit = 135000;
     uint16 requestConfirmations = 3;
     uint32 numWords = 2; // 1 into 6 ability scores + 1 for class
+     // USD price per character
+    uint256 public pricePerCharacterUSD = 20 * 1e16; // For testing $0.20, assuming price feed uses 18 decimal places.
+
 
     struct Character {
         uint256 randomWord;
@@ -57,6 +69,28 @@ contract QuickCharacterMATIC is VRFConsumerBaseV2Plus {
         COORDINATOR = IVRFCoordinatorV2Plus(
             0x343300b5d84D444B2ADc9116FEF1bED02BE49Cf2
         );
+        dataFeed = AggregatorV3Interface(0xc2e2848e28B9fE430Ab44F55a8437a33802a219C);
+    }
+
+        /**
+     * Returns the latest answer using the Chainlink data feed on MATIC testnet
+     */
+    function getChainlinkDataFeedLatestAnswer() public view returns (int) {
+        (
+            /* uint80 roundID */,
+            int answer,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = dataFeed.latestRoundData();
+        return answer;
+    }
+
+    // Function to get the cost in ETH for creating a character
+    function getCharacterCostInLINK() public view returns (uint256) {
+        int linkPrice = getChainlinkDataFeedLatestAnswer(); // Price of 1 ETH in USD (with 18 decimals)
+        require(linkPrice > 0, "Link price is non-positive");
+        return (pricePerCharacterUSD * 1e18) / uint256(linkPrice); // Returns cost in wei
     }
 
     // function to set both contracts at once

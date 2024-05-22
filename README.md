@@ -1,6 +1,7 @@
 # Block Magic ++Functions Workshop
-In this exercise, we transform the price forecast bot functions workshop into a D&D themed character info generator.  We take in character info from ```RanCharacter.sol``` and pass that to GPT for some unique Ideals, Traits, Flaws and Bonds. But first, we make a simple hardcoded backstory generator to get the ball rolling.
-"Persistence is key, don't give up!" - [BunsDev](https://github.com/BunsDev/)
+In this exercise, we transform the price forecast bot functions workshop into a D&D themed character info generator.  We take in character info from ```RanCharacter.sol``` and pass that to GPT for some unique Ideals, Traits, Flaws and Bonds. But first, we make a simple hardcoded backstory generator to get the ball rolling. See more at [Notion](https://www.notion.so/048-Hooty-Tuesday-0f37bb966a854dfe97fa030f38c05ae1?pvs=4#138f0167fbc840e0abf0c7d5c20f30b8)
+
+> "Persistence is key, don't give up!" - [BunsDev](https://github.com/BunsDev/)
 
 ## Getting Started
 - [Install Foundry and Rust](/docs/INSTALL.md)
